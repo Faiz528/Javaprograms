@@ -1,12 +1,15 @@
+import java.io.*;
 import java.util.Scanner;
 
 public class StudentData {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
         StringBuilder data = new StringBuilder();
+        String fileName = "student_data.txt";
 
-        // Simulate writing data to a file
-        for (int i = 0; i < 5; i++) {
+        // Write data to a file
+        FileWriter writer = new FileWriter(fileName);
+        for (int i = 0; i < 1; i++) {
             System.out.println("Enter details for student " + (i + 1) + ":");
 
             System.out.print("Name: ");
@@ -32,44 +35,56 @@ public class StudentData {
                 continue;
             }
 
-            data.append(name).append(",").append(studentClass).append(",").append(rollNo).append(",").append(section).append(",");
-            for (String mark : marksArray) {
-                data.append(mark).append(",");
+            data.append("Name: ").append(name).append("\n")
+                .append("Class: ").append(studentClass).append("\n")
+                .append("Roll No: ").append(rollNo).append("\n")
+                .append("Section: ").append(section).append("\n")
+                .append("Marks: \n");
+
+            String[] subjects = {"Maths", "Chemistry", "Physics", "English", "Hindi", "Computer"};
+            for (int j = 0; j < marksArray.length; j++) {
+                data.append(subjects[j]).append(": ").append(marksArray[j]).append("\n");
             }
-            data.setLength(data.length() - 1); // Remove the trailing comma
-            data.append("\n");
+            data.append("\n"); // Add a newline to separate each student's data
+
+            // Write data to file
+            writer.write(data.toString());
+            data.setLength(0); // Clear the StringBuilder for the next student
         }
+        writer.close();
 
-        System.out.println("\nData stored in memory. Reading data...\n");
+        System.out.println("\nData stored in file. Reading data...\n");
 
-        // Simulate reading data from a file
-        Scanner dataScanner = new Scanner(data.toString());
+        // Read and display data from the file in tabular form
+        FileReader reader = new FileReader(fileName);
+        BufferedReader bufferedReader = new BufferedReader(reader);
+        String line;
         System.out.printf("%-15s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s%n", "Name", "Class", "Roll No", "Section", "Maths", "Chemistry", "Physics", "English", "Hindi", "Computer", "Total", "Average");
         System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------");
 
-        while (dataScanner.hasNextLine()) {
-            String line = dataScanner.nextLine();
-            String[] details = line.split(",");
+        while ((line = bufferedReader.readLine()) != null) {
+            if (line.startsWith("Name: ")) {
+                String name = line.substring(6);
+                String studentClass = bufferedReader.readLine().substring(7);
+                String rollNo = bufferedReader.readLine().substring(9);
+                String section = bufferedReader.readLine().substring(9);
+                bufferedReader.readLine(); // Skip "Marks: " line
 
-            if (details.length == 10) {
-                String name = details[0];
-                String studentClass = details[1];
-                String rollNo = details[2];
-                String section = details[3];
-                int maths = Integer.parseInt(details[4]);
-                int chemistry = Integer.parseInt(details[5]);
-                int physics = Integer.parseInt(details[6]);
-                int english = Integer.parseInt(details[7]);
-                int hindi = Integer.parseInt(details[8]);
-                int computer = Integer.parseInt(details[9]);
+                int[] marks = new int[6];
+                for (int i = 0; i < 6; i++) {
+                    marks[i] = Integer.parseInt(bufferedReader.readLine().split(": ")[1]);
+                }
 
-                int total = maths + chemistry + physics + english + hindi + computer;
+                int total = 0;
+                for (int mark : marks) {
+                    total += mark;
+                }
                 double average = total / 6.0;
 
-                System.out.printf("%-15s %-10s %-10s %-10s %-10d %-10d %-10d %-10d %-10d %-10d %-10d %-10.2f%n", name, studentClass, rollNo, section, maths, chemistry, physics, english, hindi, computer, total, average);
-            } else {
-                System.out.println("Invalid data format.");
+                System.out.printf("%-15s %-10s %-10s %-10s %-10d %-10d %-10d %-10d %-10d %-10d %-10d %-10.2f%n",
+                        name, studentClass, rollNo, section, marks[0], marks[1], marks[2], marks[3], marks[4], marks[5], total, average);
             }
         }
+        bufferedReader.close();
     }
 }
